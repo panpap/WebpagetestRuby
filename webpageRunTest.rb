@@ -44,6 +44,11 @@ def checkResponse(url,resp)
 	end
 end
 
+def is_alreadyParsed?(url)
+	return true if (Dir[@dir+"*.csv"].any? { |word| word.include?(url)})
+	return false
+end
+
 inputFile=ARGV[0]
 @dir=ARGV[1]
 abort "Error: Wrong input" if inputFile==nil or not File.exists? inputFile
@@ -54,5 +59,7 @@ if @dir==nil
 end
 puts @dir.to_s
 File.foreach(inputFile) {|line|
-	testRunner(line.chop,@apiKey[0])
+	if not is_alreadyParsed?(line.chop)
+		testRunner(line.chop,@apiKey[0])
+	end
 }
