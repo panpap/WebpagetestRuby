@@ -7,17 +7,13 @@ require "csv"
 @queryNode="http://www.webpagetest.org/"
 @runTest="runtest.php?"
 @apiKey=["1111111111111111111111"]
-@tempFile="temp"
 
 def testRunner(url,apiKey)
 	puts "Checking URL: "+url
 	runnerUrl=@queryNode+""+@runTest
 	baseurl=command=runnerUrl+"k="+apiKey+"&url="+url+'&fvonly=1&f=json&mobile=1&mobileDevice=AndroidOne'#&location='
 	response = Net::HTTP.get(URI(baseurl))
-	name=url.split(".");
-	name=name[1] if name.size>2
-	name=name[0] if name.size==1
-	checkResponse(name,response)
+	checkResponse(url,response)
 end
 
 def getResults(filename,type,csv_url)
@@ -29,8 +25,8 @@ def getResults(filename,type,csv_url)
 		sleep 5
 	end
 	raw_results = CSV.parse(csv_content.body, {:headers => true, :return_headers => true, :header_converters => :symbol, :converters => :all})
-	fw=File.new(filename+"_"+type+".csv","w")
-	fw.puts @dir+raw_results
+	fw=File.new(@dir+filename+"_"+type+".csv","w")
+	fw.puts raw_results
 	fw.close
 end
 
@@ -44,7 +40,7 @@ def checkResponse(url,resp)
 		getResults(url,"detail",data["detailCSV"]) if data["detailCSV"]!=nil
 		getResults(url,"summary",data["summaryCSV"]) if data["summaryCSV"]!=nil
 	else
-		puts "ERROR: "+response["statusCode"]+" "+response["statusText"]
+		puts "ERROR: "+response["statusCode"].to_s+" "+response["statusText"].to_s
 	end
 end
 
@@ -56,6 +52,7 @@ if @dir==nil
 		@dir=inputFile.split("/").first
 	end
 end
+puts @dir.to_s
 File.foreach(inputFile) {|line|
 	testRunner(line.chop,@apiKey[0])
 }
